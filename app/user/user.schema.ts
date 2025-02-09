@@ -21,6 +21,7 @@ const UserSchema = new Schema<IUser>(
       default: "USER",
     },
     password: { type: String, required: true },
+    refreshToken: { type: String },
   },
   { timestamps: true }
 );

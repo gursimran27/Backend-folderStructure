@@ -17,12 +17,7 @@ router
     passport.authenticate("login", { session: false }),
     userController.loginUser
   )
-  .post(
-    "/create-user",
-    userValidator.createUser,
-    catchError,
-    userController.createUser
-  )
+  .post("/", userValidator.createUser, catchError, userController.createUser)
   .get("/getAllUser", authenticateJWT, userController.getAllUser)
   .get(
     "/:id",
@@ -52,6 +47,17 @@ router
     catchError,
     authenticateJWT,
     userController.editUser
+  )
+  .post(
+    "/refreshToken",
+    userValidator.refreshToken,
+    catchError,
+    userController.refreshToken
+  )
+  .post(
+    "/logout",
+    authenticateJWT,
+    userController.logout
   );
 
 export default router;

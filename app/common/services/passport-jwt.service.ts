@@ -82,8 +82,7 @@ export const createUserAccessTokens = (user: Omit<IUser, "password">) => {
   if (!jwtSecret) {
     throw new Error("JWT_SECRET is not defined in environment variables");
   }
-  const accessTokenExpiresIn = process.env.JWT_ACCESS_EXPIRATION_TIME ?? "2m";
-  const refreshTokenExpiresIn = process.env.JWT_REFRESH_EXPIRATION_TIME ?? "2d";
+
   const access_token = jwt.sign(user, jwtSecret , {
     expiresIn: "10m",
   });

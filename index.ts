@@ -9,6 +9,7 @@ import { loadConfig } from "./app/common/helper/config.hepler";
 import { type IUser } from "./app/user/user.dto";
 import errorHandler from "./app/common/middleware/error-handler.middleware";
 import routes from "./app/routes";
+import cors from "cors";
 
 loadConfig();
 
@@ -28,7 +29,14 @@ declare global {
 const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
-
+app.use(
+  cors({
+    origin: "*", // Allow requests from this domain only
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    credentials: true, // Enable cookies/auth headers
+  })
+);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
