@@ -12,6 +12,7 @@ import routes from "./app/routes";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./app/swagger/swagger-output.json"
+import rateLimit from "express-rate-limit";
 
 loadConfig();
 
@@ -40,6 +41,12 @@ app.use(
     credentials: true, // Enable cookies/auth headers
   })
 );
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use(limiter);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
