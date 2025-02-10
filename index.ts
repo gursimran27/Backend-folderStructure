@@ -10,6 +10,8 @@ import { type IUser } from "./app/user/user.dto";
 import errorHandler from "./app/common/middleware/error-handler.middleware";
 import routes from "./app/routes";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./app/swagger/swagger-output.json"
 
 loadConfig();
 
@@ -29,6 +31,7 @@ declare global {
 const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(
   cors({
     origin: "*", // Allow requests from this domain only
