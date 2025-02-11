@@ -3,7 +3,8 @@ import UserSchema from "./user.schema";
 import { createUserAccessTokens } from "../common/services/passport-jwt.service";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import userSchema from "./user.schema";
+
+interface IUserWithoutPassword extends Omit<IUser, "password"> {}
 
 /**
  * Logs in a user by verifying credentials and generating access tokens.

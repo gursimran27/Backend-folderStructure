@@ -11,8 +11,9 @@ import errorHandler from "./app/common/middleware/error-handler.middleware";
 import routes from "./app/routes";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "./app/swagger/swagger-output.json"
+// import swaggerDocument from "./app/swagger/swagger-output.json"
 import rateLimit from "express-rate-limit";
+import swaggerSpec from "./app/swagger/swagger-config";
 
 loadConfig();
 
@@ -32,7 +33,8 @@ declare global {
 const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(
   cors({
     origin: "*", // Allow requests from this domain only
