@@ -77,7 +77,7 @@ export const initPassport = (): void => {
   );
 };
 
-export const createUserAccessTokens = (user: Omit<IUser, "password">) => {
+export const createUserAccessTokens = (user: Omit<IUser, "password" | "refreshToken">) => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
     throw new Error("JWT_SECRET is not defined in environment variables");
@@ -86,7 +86,7 @@ export const createUserAccessTokens = (user: Omit<IUser, "password">) => {
   const access_token = jwt.sign(user, jwtSecret , {
     expiresIn: "10m",
   });
-  const refresh_token = jwt.sign(user, jwtSecret , {
+  const refresh_token = jwt.sign({_id: user._id}, jwtSecret , {
     expiresIn: "2m",
   });
   return { accessToken: access_token, refreshToken: refresh_token };
