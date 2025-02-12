@@ -3,6 +3,9 @@ import { createResponse } from "../common/helper/response.hepler";
 import asyncHandler from "express-async-handler";
 import { type Request, type Response } from "express";
 import createHttpError from "http-errors";
+import { IUser } from "./user.dto";
+
+interface IUserWithoutPassword extends Omit<IUser, "password"> {}
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.loginUser(req.body);
@@ -45,12 +48,14 @@ export const refreshToken = asyncHandler(
   }
 );
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  if (req.user) {
-    await userService.logout(req.user);
-  } else {
-    throw createHttpError(401, {
-      message: "unauthorized",
-    });
-  }
+  await userService.logout(req.user as IUserWithoutPassword);
   res.send(createResponse({}, "logged out successfully"));
+});
+
+export const uploadImage = asyncHandler(async (req: Request, res: Response) => {
+  const result = await userService.uploadImage(
+    req.user as IUserWithoutPassword,
+    req.files
+  );
+  res.send(createResponse(result, "image uploaded successfully"));
 });

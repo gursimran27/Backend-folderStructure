@@ -302,4 +302,43 @@ router.post(
  */
 router.post("/logout", authenticateJWT, userController.logout);
 
+/**
+ * @swagger
+ * /users/upload-image:
+ *   post:
+ *     summary: Upload a file
+ *     description: Uploads a file to the server and stores it in the "uploads" folder.
+ *     tags: [File Upload]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The file to upload.
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 path:
+ *                   type: string
+ *       400:
+ *         description: No file uploaded.
+ *       500:
+ *         description: File upload failed.
+ */
+
+
+router.post("/upload-image", authenticateJWT, userController.uploadImage);
+
 export default router;

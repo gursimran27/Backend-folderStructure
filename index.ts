@@ -15,16 +15,15 @@ import swaggerUi from "swagger-ui-express";
 import rateLimit from "express-rate-limit";
 import swaggerSpec from "./app/swagger/swagger-config";
 
+import fileUpload from "express-fileupload";
+import { cloudinaryConnect } from "./app/common/services/cloudinary.service";
+
 loadConfig();
 
-// When using authentication (e.g., JWT or Passport.js), middleware often attaches the logged-in user to req.user, so this ensures TypeScript recognizes it.
 declare global {
-  //Allows us to modify or extend existing TypeScript types in a global scope
   namespace Express {
-    // we can modify a library’s types without directly changing its source code by extending its namespace.
-    interface User extends Omit<IUser, "password"> {} //Extends the User interface in Express.Removes the password field from the IUser type
+    interface User extends Omit<IUser, "password"> {}
     interface Request {
-      //Extends Express' built-in Request type to include a user property
       user?: User;
     }
   }
@@ -37,9 +36,9 @@ const app: Express = express();
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(
   cors({
-    origin: "*", // Allow requests from this domain only
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // Enable cookies/auth headers
   })
 );
@@ -53,22 +52,31 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp",
+  })
+);
 
+/**
+ * Initializes the application by setting up the database, passport, and
+ * routes. Starts the server at the specified port.
+ */
 const initApp = async (): Promise<void> => {
   // init mongodb
   await initDB();
 
-  // passport init
+  cloudinaryConnect();
+
   initPassport();
 
-  // set base path to /api
   app.use("/api/v1", routes);
 
   app.get("/", (req: Request, res: Response) => {
     res.send({ status: "ok" });
   });
 
-  //Error handling middleware (it should be the last middleware)  need to pass it as the last middleware in your application setup, after all routes and other middlewares so inorder to catch errors using next(error)
   app.use(errorHandler);
 
   http.createServer(app).listen(port, () => {

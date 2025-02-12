@@ -22,6 +22,7 @@ const UserSchema = new Schema<IUser>(
     },
     password: { type: String, required: true },
     refreshToken: { type: String },
+    imageUrl: { type: String, required: true },
   },
   { timestamps: true }
 );

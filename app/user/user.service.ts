@@ -3,6 +3,9 @@ import UserSchema from "./user.schema";
 import { createUserAccessTokens } from "../common/services/passport-jwt.service";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import createHttpError from "http-errors";
+import { uploadToCloudinary } from "../common/utils/cloudinaryUploader";
+import { UploadedFile } from "express-fileupload";
 
 interface IUserWithoutPassword extends Omit<IUser, "password"> {}
 
@@ -159,4 +162,38 @@ export const logout = async (data: Omit<IUser, "password">) => {
   // console.log(data);
   await UserSchema.findByIdAndUpdate(data._id, { refreshToken: null });
   return;
+};
+
+/**
+ * Uploads a profile image for the given user.
+ * @param {IUserWithoutPassword} user - User data without password.
+ * @param {any} files - Multipart/form-data file upload containing the image.
+ * @returns {Promise<IUser>} - Updated user document with the image URL.
+ * @throws {HttpError} - If no file is uploaded or the user is unauthorized.
+ */
+export const uploadImage = async (user: IUserWithoutPassword, files: any) => {
+  if (!user) throw createHttpError(401, "unauthorised");
+
+  const file = files?.file as UploadedFile;
+  if (!file) throw createHttpError(400, "No file uploaded");
+
+  let mediaUrl = null;
+
+  const cloud = await uploadToCloudinary(
+    file,
+    `${process.env.FOLDER_NAME}/${user._id}-avatar`,
+    1000,
+    1000
+  );
+  mediaUrl = cloud.secure_url;
+
+  const userDoc = await UserSchema.findByIdAndUpdate(
+    user._id,
+    {
+      imageUrl: mediaUrl,
+    },
+    { new: true }
+  );
+
+  return userDoc;
 };
