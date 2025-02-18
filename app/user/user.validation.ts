@@ -11,8 +11,8 @@ export const createUser = [
     .withMessage("email is required")
     .isString()
     .withMessage("email must be a string"),
-  body("active").isBoolean().withMessage("active must be a boolean"),
-  body("role").isString().withMessage("role must be a string"),
+  // body("active").isBoolean().withMessage("active must be a boolean"),
+  // body("role").isString().withMessage("role must be a string"),
   body("password")
     .notEmpty()
     .withMessage("password is required")
@@ -31,7 +31,7 @@ export const updateUser = [
     .withMessage("email is required")
     .isString()
     .withMessage("email must be a string"),
-  body("active").isBoolean().withMessage("active must be a boolean"),
+  // body("active").isBoolean().withMessage("active must be a boolean"),
   body("password")
     .notEmpty()
     .withMessage("password is required")

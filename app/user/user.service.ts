@@ -21,7 +21,7 @@ export const loginUser = async (data: { email: string; password: string }) => {
   const user = await getUserByEmail(data.email);
   if (user) {
     //type Guard
-    const { password, ...userWithoutPassword } = user;
+    const { password, refreshToken, ...userWithoutPassword } = user;
     const tokens = createUserAccessTokens(userWithoutPassword);
     await UserSchema.findByIdAndUpdate(
       user._id,
@@ -45,6 +45,10 @@ export const createUser = async (data: IUser) => {
     ...data,
     active: data?.active ?? true,
   });
+  if (result) {
+    const { password, refreshToken, ...filteredResult } = result;
+    return filteredResult;
+  }
   return result;
 };
 
@@ -63,8 +67,11 @@ export const updateUser = async (id: string, data: IUser) => {
     {
       new: true,
     }
-  );
-  return result;
+  ).lean();
+  if (result) {
+    const { password, refreshToken, ...filteredResult } = result;
+    return filteredResult;
+  }
 };
 
 /**
@@ -74,7 +81,11 @@ export const updateUser = async (id: string, data: IUser) => {
  * @returns {Promise<Object|null>} - Updated user document.
  */
 export const editUser = async (id: string, data: Partial<IUser>) => {
-  const result = await UserSchema.findOneAndUpdate({ _id: id }, data);
+  const result = await UserSchema.findOneAndUpdate({ _id: id }, data).lean();
+  if (result) {
+    const { password, refreshToken, ...filteredResult } = result;
+    return filteredResult;
+  }
   return result;
 };
 
@@ -95,6 +106,10 @@ export const deleteUser = async (id: string) => {
  */
 export const getUserById = async (id: string) => {
   const result = await UserSchema.findById(id).lean();
+  if (result) {
+    const { password, refreshToken, ...filteredResult } = result;
+    return filteredResult;
+  }
   return result;
 };
 
@@ -103,7 +118,10 @@ export const getUserById = async (id: string) => {
  * @returns {Promise<Array<Object>>} - List of users.
  */
 export const getAllUser = async () => {
-  const result = await UserSchema.find({}).lean();
+  const result = await UserSchema.find({})
+    .select("-password -refreshToken")
+    .lean();
+
   return result;
 };
 /**
@@ -112,8 +130,17 @@ export const getAllUser = async () => {
  * @returns {Promise<Object|null>} - User document.
  */
 export const getUserByEmail = async (email: string) => {
+  // donot delete the password and refresh token from this as it is used while login
   const result = await UserSchema.findOne({ email }).lean();
   return result;
+};
+
+export const getMe = async (user: IUserWithoutPassword) => {
+  const result = await UserSchema.findById(user._id).lean();
+  if (result) {
+    const { password, refreshToken, ...filteredResult } = result;
+    return filteredResult;
+  }
 };
 
 /**
@@ -122,7 +149,7 @@ export const getUserByEmail = async (email: string) => {
  * @returns {Promise<Object>} - New access and refresh tokens.
  * @throws {Error} - If refresh token is invalid or user not found.
  */
-export const refreshToken = async (refreshToken: string) => {
+export const refreshToken = async (refreshtoken: string) => {
   // console.log(`Refreshing token: ${refreshToken}`);
   const jwtRefreshSecret = process.env.JWT_SECRET ?? "";
 
@@ -130,26 +157,30 @@ export const refreshToken = async (refreshToken: string) => {
     throw new Error("JWT_SECRET is not defined");
   }
 
-  const decoded = jwt.verify(refreshToken, jwtRefreshSecret) as JwtPayload;
+  const decoded = jwt.verify(refreshtoken, jwtRefreshSecret) as JwtPayload;
 
   if (!decoded || !decoded._id) {
     throw new Error("Invalid refresh token");
   }
 
-  const user = await UserSchema.findById(decoded._id);
+  const user = await UserSchema.findById(decoded._id).lean();
   if (!user) {
     throw new Error("User not found");
   }
 
-  if (user.refreshToken !== refreshToken) {
+  if (user.refreshToken !== refreshtoken) {
     throw new Error("Invalid refresh token");
   }
-  const { password, ...userWithoutPassword } = user;
+  const { password, refreshToken, ...userWithoutPassword } = user;
   const tokens = createUserAccessTokens(userWithoutPassword);
 
   await UserSchema.findByIdAndUpdate(user._id, {
     refreshToken: tokens.refreshToken,
   });
+
+  console.log(userWithoutPassword);
+
+  console.log(tokens);
 
   return tokens;
 };
@@ -193,7 +224,9 @@ export const uploadImage = async (user: IUserWithoutPassword, files: any) => {
       imageUrl: mediaUrl,
     },
     { new: true }
-  );
-
-  return userDoc;
+  ).lean();
+  if (userDoc) {
+    const { password, refreshToken, ...filterObj } = userDoc;
+    return filterObj;
+  }
 };

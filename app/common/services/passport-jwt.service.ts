@@ -25,12 +25,14 @@ export const initPassport = (): void => {
       async (decode: Request["user"], done) => {
         try {
           if (!decode) {
-            return done(createError(401, 'Invalid token: No user found in token'), false);
+            // return done(createError(401, 'Invalid token: No user found in token'), false);
+            return done(null, false, { message: "Invalid token: No user found in token" });
           }
           const user = decode;
           done(null, user);//this will set req.user
         } catch (error) {
-          done(createError(401, "Either token expires or invalid token"), false);
+          // done(createError(401, "Either token expires or invalid token"), false);
+          return done(null, false, { message: "Either token expired or invalid token" });
         }
       }
     )
@@ -61,7 +63,6 @@ export const initPassport = (): void => {
           //   done(createError(401, "User is blocked, Contact to admin"), false);
           //   return;
           // }
-
           const validate = await isValidPassword(password, user.password);
           if (!validate) {
             done(createError(401, "Invalid email or password"), false);
@@ -84,10 +85,10 @@ export const createUserAccessTokens = (user: Omit<IUser, "password" | "refreshTo
   }
 
   const access_token = jwt.sign(user, jwtSecret , {
-    expiresIn: "10m",
+    expiresIn: "1m",
   });
   const refresh_token = jwt.sign({_id: user._id}, jwtSecret , {
-    expiresIn: "2m",
+    expiresIn: "10m",
   });
   return { accessToken: access_token, refreshToken: refresh_token };
 };

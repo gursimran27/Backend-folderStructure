@@ -35,6 +35,11 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.getUserById(req.params.id);
   res.send(createResponse(result));
 });
+export const getMe = asyncHandler(async (req: Request, res: Response) => {
+  console.log("test")
+  const result = await userService.getMe(req.user as IUserWithoutPassword);
+  res.send(createResponse(result));
+});
 
 export const getAllUser = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.getAllUser();

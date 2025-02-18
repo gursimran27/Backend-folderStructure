@@ -16,6 +16,12 @@ const publicRoutes = ["/login", "/create-user"];
  *   description: User management API
  */
 
+router.get(
+  "/me",
+  authenticateJWT,
+  userController.getMe
+);
+
 /**
  * @swagger
  * /users/login:
@@ -280,7 +286,7 @@ router.patch(
  *         description: Unauthorized
  */
 router.post(
-  "/refreshToken",
+  "/refresh-token",
   userValidator.refreshToken,
   catchError,
   userController.refreshToken
@@ -337,8 +343,6 @@ router.post("/logout", authenticateJWT, userController.logout);
  *       500:
  *         description: File upload failed.
  */
-
-
 router.post("/upload-image", authenticateJWT, userController.uploadImage);
 
 export default router;
